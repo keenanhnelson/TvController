@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>GStreamer with NodeJS Demo</title>
+</head>
+
+<body>
+	<img id="vidStream" src="/stream"><br>
+	<form action="/remote_action" method="post" target="hiddenFrame">
+		<button type="submit" name="button_power_on">Power On</button>
+		<button type="submit" name="button_power_off">Power Off</button><br>
+		<button type="submit" name="button_up">Up</button><br>
+		<button type="submit" name="button_left">Left</button>
+		<button type="submit" name="button_select">Select</button>
+		<button type="submit" name="button_right">Right</button><br>
+		<button type="submit" name="button_down">Down</button><br>
+		<button type="submit" name="button_volume_up">Volume Up</button><br>
+		<button type="submit" name="button_volume_down">Volume Down</button>
+	</form>
+
+<iframe name="hiddenFrame" width="0" height="0" border="0" style="display: none;"></iframe>
+
+</body>
+</html>
