@@ -1,10 +1,11 @@
 import socket
-from flask import Flask, render_template, Response, redirect, request
+from flask import Flask, render_template, Response, redirect, request, session
 import subprocess
 import samsungctl
 from roku import Roku
 
 app = Flask(__name__)
+app.secret_key = 'BAD_SECRET_KEY'
 
 
 @app.route("/")
@@ -14,17 +15,7 @@ def root():
 
 @app.route("/remote_action", methods=["POST"])
 def remote_action():
-    config_samsung = {
-        "name": "samsungctl",
-        "description": "PC",
-        "id": "",
-        "host": "192.168.254.167",
-        "port": 55000,
-        "method": "legacy",
-        "timeout": 0,
-    }
-    remote = samsungctl.Remote(config_samsung)
-
+    remote = app.remote_samsung
     # https://github.com/ollo69/ha-samsungtv-smart/blob/master/docs/Key_codes.md
     if "button_power_on" in request.form:
         print("Pressed button_power_on")
@@ -53,8 +44,6 @@ def remote_action():
     elif "button_volume_down" in request.form:
         print("Pressed button_volume_down")
         remote.control("KEY_VOLDOWN")
-
-    remote.close()
     return "", 204
 
 
@@ -71,9 +60,36 @@ def gen(s):
 @app.route("/stream")
 def stream():
     print("stream() called")
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.connect(("localhost", app.gstreamer_port))
+    return Response(gen(s), mimetype=f'multipart/x-mixed-replace; boundary={app.mjpeg_boundary}')
+
+
+def find_open_port():
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    sock.bind(('localhost', 0))
+    port = sock.getsockname()[1]
+    sock.close()
+    return port
+
+
+if __name__ == "__main__":
+
+    config_samsung = {
+        "name": "samsungctl",
+        "description": "PC",
+        "id": "",
+        "host": "192.168.254.167",
+        "port": 55000,
+        "method": "legacy",
+        "timeout": 0,
+    }
+    print("Connecting to samsung tv")
+    app.remote_samsung = samsungctl.Remote(config_samsung)
+    print("Finished connecting to samsung tv")
 
     gstreamer_cmd = "gst-launch-1.0.exe"
-    gstreamer_port = 5007
+    gstreamer_port = find_open_port()  # 5007
     mjpeg_boundary = "video_boundary"
     cmd = [
             gstreamer_cmd,
@@ -85,26 +101,9 @@ def stream():
             "!", "tcpserversink", "host=0.0.0.0", f"port={gstreamer_port}",
         ]
     p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-
-    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.connect(("localhost", gstreamer_port))
-    return Response(gen(s), mimetype=f'multipart/x-mixed-replace; boundary={mjpeg_boundary}')
-
-
-if __name__ == "__main__":
-    # config_samsung = {
-    #     "name": "samsungctl",
-    #     "description": "PC",
-    #     "id": "",
-    #     "host": "192.168.254.167",
-    #     "port": 55000,
-    #     "method": "websocket",
-    #     "timeout": 0,
-    # }
-    # remote = samsungctl.Remote(config_samsung)
-    # remote.control("KEY_VOLUP")
-    # remote.close()
+    app.gstreamer_port = gstreamer_port
+    app.mjpeg_boundary = mjpeg_boundary
 
     # app.run(debug=True, port=4003)
     app.run(host="0.0.0.0", port=4003)
-# gst-launch-1.0 -v d3d11screencapturesrc monitor-index=1 crop-x=1280 crop-y=720 crop-width=320 crop-height=240 ! videoconvert ! jpegenc ! multipartmux boundary=video_boundary ! tcpserversink host=0.0.0.0 port=5007
+
