@@ -1,18 +1,40 @@
 {% extends "base.html" %}
 
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+{% endblock head %}
+
 {% block y %}
-	<img id="vidStream" src="/remote_video"><br>
+<div id="stream_div">
+	<img id="vidStream" src="/remote_video">
+</div>
+<div id="button_div">
 	<form action="/remote_action" method="post" target="hiddenFrame">
-		<button type="submit" name="button_power_on">Power On</button>
-		<button type="submit" name="button_power_off">Power Off</button><br>
-		<button type="submit" name="button_up">Up</button><br>
-		<button type="submit" name="button_left">Left</button>
-		<button type="submit" name="button_select">Select</button>
-		<button type="submit" name="button_right">Right</button><br>
-		<button type="submit" name="button_down">Down</button><br>
-		<button type="submit" name="button_volume_up">Volume Up</button><br>
-		<button type="submit" name="button_volume_down">Volume Down</button>
+		<div class="button_row">
+			<button class="button" type="submit" name="button_power_toggle">Power On</button>
+		</div>
+		<div class="button_row">
+			<button class="button" type="submit" name="button_up">Up</button><br>
+		</div>
+		<div class="button_row">
+			<button class="button" type="submit" name="button_left">Left</button>
+			<button class="button" type="submit" name="button_enter">Enter</button>
+			<button class="button" type="submit" name="button_right">Right</button>
+		</div>
+		<div class="button_row">
+			<button class="button" type="submit" name="button_down">Down</button>
+		</div>
+		<div class="button_row">
+			<button class="button" type="submit" name="button_back">Back</button>
+			<button class="button" type="submit" name="button_menu">Menu</button>
+		</div>
+		<div class="button_row">
+			<button class="button" type="submit" name="button_volume_up">Volume Up</button>
+			<button class="button" type="submit" name="button_volume_down">Volume Down</button>
+		</div>
 	</form>
+</div>
+
 
 <iframe name="hiddenFrame" width="0" height="0" border="0" style="display: none;"></iframe>
 {% endblock %}

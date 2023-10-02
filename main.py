@@ -105,9 +105,11 @@ def setup_tv_actions(ip, port):
         "button_power_toggle": tv_remote.shortcuts().power,
         "button_up": tv_remote.shortcuts().up,
         "button_left": tv_remote.shortcuts().left,
-        "button_select": tv_remote.shortcuts().enter,
+        "button_enter": tv_remote.shortcuts().enter,
         "button_right": tv_remote.shortcuts().right,
         "button_down": tv_remote.shortcuts().down,
+        "button_back": tv_remote.shortcuts().back,
+        "button_menu": tv_remote.shortcuts().menu,
         "button_volume_up": tv_remote.shortcuts().volume_up,
         "button_volume_down": tv_remote.shortcuts().volume_down,
     }
