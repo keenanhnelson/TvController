@@ -22,14 +22,20 @@ with open("Secrets/ValidUsers.json") as f:
     valid_users = json.load(f)
 
 
-@app.route("/")
-def root():
+def check_if_user_has_already_logged_in():
     if not session.get("username"):
-        return redirect("/login")
+        return False
     if session.get("username") in valid_users:
         if session.get("password") == valid_users[session.get("username")]:
-            return redirect("/remote_screen")
-    return redirect('/login')
+            return True
+
+
+@app.route("/")
+def root():
+    if check_if_user_has_already_logged_in():
+        return redirect("/remote_screen")
+    else:
+        return redirect('/login')
 
 
 @app.route("/login", methods=["POST", "GET"])
@@ -49,39 +55,20 @@ def login():
 
 @app.route("/remote_action", methods=["POST"])
 def remote_action():
-    remote = app.remote_samsung
-    if "button_power_on" in request.form:
-        print("Pressed button_power_on")
-        remote.shortcuts().power()
-    elif "button_power_off" in request.form:
-        print("Pressed button_power_off")
-        remote.shortcuts().power()
-    elif "button_up" in request.form:
-        print("Pressed button_up")
-        remote.shortcuts().up()
-    elif "button_left" in request.form:
-        print("Pressed button_left")
-        remote.shortcuts().left()
-    elif "button_select" in request.form:
-        print("Pressed button_select")
-        remote.shortcuts().enter()
-    elif "button_right" in request.form:
-        print("Pressed button_right")
-        remote.shortcuts().right()
-    elif "button_down" in request.form:
-        print("Pressed button_down")
-        remote.shortcuts().down()
-    elif "button_volume_up" in request.form:
-        print("Pressed button_volume_up")
-        remote.shortcuts().volume_up()
-    elif "button_volume_down" in request.form:
-        print("Pressed button_volume_down")
-        remote.shortcuts().volume_down()
+    if not check_if_user_has_already_logged_in():
+        return redirect('/login')
+
+    for key, value in request.form.items():
+        if key in app.tv_action:
+            app.tv_action[key]()
     return "", 204
 
 
 @app.route("/remote_screen")
 def remote_screen():
+    if not check_if_user_has_already_logged_in():
+        return redirect('/login')
+
     return render_template("RemoteScreen.html")
 
 
@@ -92,7 +79,9 @@ def gen(s):
 
 @app.route("/remote_video")
 def remote_video():
-    print("remote_video() called")
+    if not check_if_user_has_already_logged_in():
+        return redirect('/login')
+
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.connect(("localhost", app.gstreamer_port))
     return Response(gen(s), mimetype=f'multipart/x-mixed-replace; boundary={app.mjpeg_boundary}')
@@ -106,12 +95,30 @@ def find_open_port():
     return port
 
 
-if __name__ == "__main__":
-
+def setup_tv_actions(ip, port):
     print("Connecting to samsung tv")
     tv_token_file = os.path.dirname(os.path.realpath(__file__)) + '/Secrets/TvToken.txt'
-    app.remote_samsung = SamsungTVWS(host='192.168.254.125', port=8002, token_file=tv_token_file)
+    tv_remote = SamsungTVWS(host=ip, port=port, token_file=tv_token_file)
     print("Finished connecting to samsung tv")
+
+    tv_action = {
+        "button_power_toggle": tv_remote.shortcuts().power,
+        "button_up": tv_remote.shortcuts().up,
+        "button_left": tv_remote.shortcuts().left,
+        "button_select": tv_remote.shortcuts().enter,
+        "button_right": tv_remote.shortcuts().right,
+        "button_down": tv_remote.shortcuts().down,
+        "button_volume_up": tv_remote.shortcuts().volume_up,
+        "button_volume_down": tv_remote.shortcuts().volume_down,
+    }
+    app.tv_action = tv_action
+    print("done")
+
+
+if __name__ == "__main__":
+    tv_ip_address = "192.168.254.125"  # LivingRoom:192.168.254.125  WorkoutRoom:192.168.254.167
+    tv_port = 8002
+    setup_tv_actions(tv_ip_address, tv_port)
 
     print("Opening gstreamer pipeline")
     gstreamer_cmd = "gst-launch-1.0.exe"
@@ -119,14 +126,14 @@ if __name__ == "__main__":
     mjpeg_boundary = "video_boundary"
     print(f"{gstreamer_port=}")
     cmd = [
-            gstreamer_cmd,
-            "-v",
-            "ksvideosrc", "device-index=0",
-            "!", "videoconvert",
-            "!", "jpegenc",
-            "!", "multipartmux", f"boundary={mjpeg_boundary}",
-            "!", "tcpserversink", "host=0.0.0.0", f"port={gstreamer_port}",
-        ]
+        gstreamer_cmd,
+        "-v",
+        "ksvideosrc", "device-index=0",
+        "!", "videoconvert",
+        "!", "jpegenc",
+        "!", "multipartmux", f"boundary={mjpeg_boundary}",
+        "!", "tcpserversink", "host=0.0.0.0", f"port={gstreamer_port}",
+    ]
     p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     app.gstreamer_port = gstreamer_port
     app.mjpeg_boundary = mjpeg_boundary
