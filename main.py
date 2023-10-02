@@ -3,14 +3,47 @@ from flask import Flask, render_template, Response, redirect, request, session
 import subprocess
 import samsungctl
 from roku import Roku
+from flask_session import Session
+import json
 
 app = Flask(__name__)
-app.secret_key = 'BAD_SECRET_KEY'
+
+# Set session secret key
+with open("Secrets/SessionsSecretKey.txt") as f:
+    session_secret_key = f.read()
+app.secret_key = session_secret_key
+app.config["SESSION_PERMANENT"] = False
+app.config["SESSION_TYPE"] = "filesystem"
+Session(app)
+
+# Read valid users
+with open("Secrets/ValidUsers.json") as f:
+    valid_users = json.load(f)
 
 
 @app.route("/")
 def root():
-    return redirect("/remote_screen")
+    if not session.get("username"):
+        return redirect("/login")
+    if session.get("username") in valid_users:
+        if session.get("password") == valid_users[session.get("username")]:
+            return redirect("/remote_screen")
+    return redirect('/login')
+
+
+@app.route("/login", methods=["POST", "GET"])
+def login():
+    error_msg = ""
+    if request.method == "POST":
+        input_username = request.form.get("username")
+        input_password = request.form.get("password")
+        if input_username in valid_users:
+            if input_password == valid_users[input_username]:
+                session["username"] = input_username
+                session["password"] = input_password
+                return redirect("/")
+        error_msg = "Wrong username or password"
+    return render_template("login.html", error_msg=error_msg)
 
 
 @app.route("/remote_action", methods=["POST"])
