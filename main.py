@@ -1,10 +1,11 @@
 import socket
 from flask import Flask, render_template, Response, redirect, request, session
 import subprocess
-import samsungctl
+from samsungtvws import SamsungTVWS
 from roku import Roku
 from flask_session import Session
 import json
+import os
 
 app = Flask(__name__)
 
@@ -49,34 +50,33 @@ def login():
 @app.route("/remote_action", methods=["POST"])
 def remote_action():
     remote = app.remote_samsung
-    # https://github.com/ollo69/ha-samsungtv-smart/blob/master/docs/Key_codes.md
     if "button_power_on" in request.form:
         print("Pressed button_power_on")
-        remote.control("KEY_POWERON")
+        remote.shortcuts().power()
     elif "button_power_off" in request.form:
         print("Pressed button_power_off")
-        remote.control("KEY_POWEROFF")
+        remote.shortcuts().power()
     elif "button_up" in request.form:
         print("Pressed button_up")
-        remote.control("KEY_UP")
+        remote.shortcuts().up()
     elif "button_left" in request.form:
         print("Pressed button_left")
-        remote.control("KEY_LEFT")
+        remote.shortcuts().left()
     elif "button_select" in request.form:
         print("Pressed button_select")
-        remote.control("KEY_ENTER")
+        remote.shortcuts().enter()
     elif "button_right" in request.form:
         print("Pressed button_right")
-        remote.control("KEY_RIGHT")
+        remote.shortcuts().right()
     elif "button_down" in request.form:
         print("Pressed button_down")
-        remote.control("KEY_DOWN")
+        remote.shortcuts().down()
     elif "button_volume_up" in request.form:
         print("Pressed button_volume_up")
-        remote.control("KEY_VOLUP")
+        remote.shortcuts().volume_up()
     elif "button_volume_down" in request.form:
         print("Pressed button_volume_down")
-        remote.control("KEY_VOLDOWN")
+        remote.shortcuts().volume_down()
     return "", 204
 
 
@@ -108,17 +108,9 @@ def find_open_port():
 
 if __name__ == "__main__":
 
-    config_samsung = {
-        "name": "samsungctl",
-        "description": "PC",
-        "id": "",
-        "host": "192.168.254.167",
-        "port": 55000,
-        "method": "legacy",
-        "timeout": 0,
-    }
     print("Connecting to samsung tv")
-    app.remote_samsung = samsungctl.Remote(config_samsung)
+    tv_token_file = os.path.dirname(os.path.realpath(__file__)) + '/Secrets/TvToken.txt'
+    app.remote_samsung = SamsungTVWS(host='192.168.254.125', port=8002, token_file=tv_token_file)
     print("Finished connecting to samsung tv")
 
     print("Opening gstreamer pipeline")
