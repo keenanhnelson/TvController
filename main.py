@@ -93,25 +93,9 @@ def gen(s):
 @app.route("/remote_video")
 def remote_video():
     print("remote_video() called")
-
-    gstreamer_cmd = "gst-launch-1.0.exe"
-    gstreamer_port = find_open_port()  # 5007
-    mjpeg_boundary = "video_boundary"
-    print(f"{gstreamer_port=}")
-    cmd = [
-            gstreamer_cmd,
-            "-v",
-            "ksvideosrc", "device-index=0",
-            "!", "videoconvert",
-            "!", "jpegenc",
-            "!", "multipartmux", f"boundary={mjpeg_boundary}",
-            "!", "tcpserversink", "host=0.0.0.0", f"port={gstreamer_port}",
-        ]
-    p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.connect(("localhost", gstreamer_port))
-    return Response(gen(s), mimetype=f'multipart/x-mixed-replace; boundary={mjpeg_boundary}')
+    s.connect(("localhost", app.gstreamer_port))
+    return Response(gen(s), mimetype=f'multipart/x-mixed-replace; boundary={app.mjpeg_boundary}')
 
 
 def find_open_port():
@@ -136,6 +120,25 @@ if __name__ == "__main__":
     print("Connecting to samsung tv")
     app.remote_samsung = samsungctl.Remote(config_samsung)
     print("Finished connecting to samsung tv")
+
+    print("Opening gstreamer pipeline")
+    gstreamer_cmd = "gst-launch-1.0.exe"
+    gstreamer_port = find_open_port()  # 5007
+    mjpeg_boundary = "video_boundary"
+    print(f"{gstreamer_port=}")
+    cmd = [
+            gstreamer_cmd,
+            "-v",
+            "ksvideosrc", "device-index=0",
+            "!", "videoconvert",
+            "!", "jpegenc",
+            "!", "multipartmux", f"boundary={mjpeg_boundary}",
+            "!", "tcpserversink", "host=0.0.0.0", f"port={gstreamer_port}",
+        ]
+    p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    app.gstreamer_port = gstreamer_port
+    app.mjpeg_boundary = mjpeg_boundary
+    print("Finished gstreamer pipeline")
 
     app.run(host="0.0.0.0", port=4003)
 
