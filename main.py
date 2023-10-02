@@ -115,11 +115,7 @@ def setup_tv_actions(ip, port):
     print("done")
 
 
-if __name__ == "__main__":
-    tv_ip_address = "192.168.254.125"  # LivingRoom:192.168.254.125  WorkoutRoom:192.168.254.167
-    tv_port = 8002
-    setup_tv_actions(tv_ip_address, tv_port)
-
+def setup_video_streaming():
     print("Opening gstreamer pipeline")
     gstreamer_cmd = "gst-launch-1.0.exe"
     gstreamer_port = find_open_port()  # 5007
@@ -139,5 +135,14 @@ if __name__ == "__main__":
     app.mjpeg_boundary = mjpeg_boundary
     print("Finished gstreamer pipeline")
 
-    app.run(host="0.0.0.0", port=4003)
+
+if __name__ == "__main__":
+    tv_ip_address = "192.168.254.125"
+    tv_port = 8002
+    setup_tv_actions(tv_ip_address, tv_port)
+
+    setup_video_streaming()
+
+    webhost_port = 4003
+    app.run(host="0.0.0.0", port=webhost_port)
 
