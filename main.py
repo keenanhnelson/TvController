@@ -6,6 +6,7 @@ from roku import Roku
 from flask_session import Session
 import json
 import os
+import platform
 
 app = Flask(__name__)
 
@@ -119,14 +120,22 @@ def setup_tv_actions(ip, port):
 
 def setup_video_streaming():
     print("Opening gstreamer pipeline")
-    gstreamer_cmd = "gst-launch-1.0.exe"
+    if platform.system() == "Windows":
+        gstreamer_cmd = "gst-launch-1.0.exe"
+        webcam_option = ["ksvideosrc", "device-index=0"]
+    elif platform.system() == "Linux":
+        gstreamer_cmd = "gst-launch-1.0"
+        webcam_option = ["v4l2src", "device=/dev/video0"]
+    else:
+        raise Exception(f"Does not currently suppport {platform.system()}")
+
     gstreamer_port = find_open_port()  # 5007
     mjpeg_boundary = "video_boundary"
     print(f"{gstreamer_port=}")
     cmd = [
         gstreamer_cmd,
         "-v",
-        "ksvideosrc", "device-index=0",
+        *webcam_option,
         "!", "videoconvert",
         "!", "jpegenc",
         "!", "multipartmux", f"boundary={mjpeg_boundary}",
