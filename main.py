@@ -59,9 +59,39 @@ def remote_action():
     if not check_if_user_has_already_logged_in():
         return redirect('/login')
 
-    for key, value in request.form.items():
-        if key in app.tv_action:
-            app.tv_action[key]()
+    # for key, value in request.form.items():
+    #     if key in app.tv_action:
+    #         app.tv_action[key]()
+
+    tv_ip_address = "192.168.254.125"
+    tv_port = 8002
+    token_file = os.path.dirname(os.path.realpath(__file__)) + '/Secrets/TvToken.txt'
+
+    if "button_power_toggle" in request.form:
+        print("Pressed button_power_toggle")
+        SamsungTVWS(host=tv_ip_address, port=tv_port, token_file=token_file).shortcuts().power()
+    elif "button_up" in request.form:
+        print("Pressed button_up")
+        SamsungTVWS(host=tv_ip_address, port=tv_port, token_file=token_file).shortcuts().up()
+    elif "button_left" in request.form:
+        print("Pressed button_left")
+        SamsungTVWS(host=tv_ip_address, port=tv_port, token_file=token_file).shortcuts().left()
+    elif "button_select" in request.form:
+        print("Pressed button_select")
+        SamsungTVWS(host=tv_ip_address, port=tv_port, token_file=token_file).shortcuts().enter()
+    elif "button_right" in request.form:
+        print("Pressed button_right")
+        SamsungTVWS(host=tv_ip_address, port=tv_port, token_file=token_file).shortcuts().right()
+    elif "button_down" in request.form:
+        print("Pressed button_down")
+        SamsungTVWS(host=tv_ip_address, port=tv_port, token_file=token_file).shortcuts().down()
+    elif "button_volume_up" in request.form:
+        print("Pressed button_volume_up")
+        SamsungTVWS(host=tv_ip_address, port=tv_port, token_file=token_file).shortcuts().volume_up()
+    elif "button_volume_down" in request.form:
+        print("Pressed button_volume_down")
+        SamsungTVWS(host=tv_ip_address, port=tv_port, token_file=token_file).shortcuts().volume_down()
+    print("Finished button press")
     return "", 204
 
 
@@ -148,9 +178,9 @@ def setup_video_streaming():
 
 
 if __name__ == "__main__":
-    tv_ip_address = "192.168.254.125"
-    tv_port = 8002
-    setup_tv_actions(tv_ip_address, tv_port)
+    # tv_ip_address = "192.168.254.125"
+    # tv_port = 8002
+    # setup_tv_actions(tv_ip_address, tv_port)
 
     setup_video_streaming()
 
