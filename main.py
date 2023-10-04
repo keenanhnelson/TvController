@@ -76,8 +76,8 @@ def remote_action():
     elif "button_left" in request.form:
         print("Pressed button_left")
         SamsungTVWS(host=tv_ip_address, port=tv_port, token_file=token_file).shortcuts().left()
-    elif "button_select" in request.form:
-        print("Pressed button_select")
+    elif "button_enter" in request.form:
+        print("Pressed button_enter")
         SamsungTVWS(host=tv_ip_address, port=tv_port, token_file=token_file).shortcuts().enter()
     elif "button_right" in request.form:
         print("Pressed button_right")
