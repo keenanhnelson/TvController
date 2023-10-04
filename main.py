@@ -99,20 +99,20 @@ def find_open_port():
 def setup_tv_actions(ip, port):
     print("Connecting to samsung tv")
     tv_token_file = os.path.dirname(os.path.realpath(__file__)) + '/Secrets/TvToken.txt'
-    tv_remote = SamsungTVWS(host=ip, port=port, token_file=tv_token_file)
+    # tv_remote = SamsungTVWS(host=ip, port=port, token_file=tv_token_file)
     print("Finished connecting to samsung tv")
 
     tv_action = {
-        "button_power_toggle": tv_remote.shortcuts().power,
-        "button_up": tv_remote.shortcuts().up,
-        "button_left": tv_remote.shortcuts().left,
-        "button_enter": tv_remote.shortcuts().enter,
-        "button_right": tv_remote.shortcuts().right,
-        "button_down": tv_remote.shortcuts().down,
-        "button_back": tv_remote.shortcuts().back,
-        "button_menu": tv_remote.shortcuts().menu,
-        "button_volume_up": tv_remote.shortcuts().volume_up,
-        "button_volume_down": tv_remote.shortcuts().volume_down,
+        "button_power_toggle": SamsungTVWS(host=ip, port=port, token_file=tv_token_file).shortcuts().power,
+        "button_up": SamsungTVWS(host=ip, port=port, token_file=tv_token_file).shortcuts().up,
+        "button_left": SamsungTVWS(host=ip, port=port, token_file=tv_token_file).shortcuts().left,
+        "button_enter": SamsungTVWS(host=ip, port=port, token_file=tv_token_file).shortcuts().enter,
+        "button_right": SamsungTVWS(host=ip, port=port, token_file=tv_token_file).shortcuts().right,
+        "button_down": SamsungTVWS(host=ip, port=port, token_file=tv_token_file).shortcuts().down,
+        "button_back": SamsungTVWS(host=ip, port=port, token_file=tv_token_file).shortcuts().back,
+        "button_menu": SamsungTVWS(host=ip, port=port, token_file=tv_token_file).shortcuts().menu,
+        "button_volume_up": SamsungTVWS(host=ip, port=port, token_file=tv_token_file).shortcuts().volume_up,
+        "button_volume_down": SamsungTVWS(host=ip, port=port, token_file=tv_token_file).shortcuts().volume_down,
     }
     app.tv_action = tv_action
     print("done")
