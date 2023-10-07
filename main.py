@@ -14,7 +14,7 @@ app = Flask(__name__)
 with open("Secrets/SessionsSecretKey.txt") as f:
     session_secret_key = f.read()
 app.secret_key = session_secret_key
-app.config["SESSION_PERMANENT"] = False
+app.config["SESSION_PERMANENT"] = True
 app.config["SESSION_TYPE"] = "filesystem"
 Session(app)
 
