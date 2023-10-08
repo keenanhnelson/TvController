@@ -1,5 +1,8 @@
 .container{
-    text-align: center;
+    display: flex;
+    justify-content: center;
+    margin: 0;
+    padding: 0;
 }
 
 img{
@@ -11,4 +14,8 @@ img{
     padding: 15px 32px;
     margin: 4px 2px;
     font-size: 16px;
+}
+
+.buttons_centered {
+    text-align: center;
 }
