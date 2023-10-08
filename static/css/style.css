@@ -2,6 +2,11 @@
     text-align: center;
 }
 
+img{
+    max-width: 100%;
+    height: auto;
+}
+
 .button {
     padding: 15px 32px;
     margin: 4px 2px;
