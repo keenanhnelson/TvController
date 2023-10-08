@@ -66,9 +66,13 @@ Install the required modules
 python -m pip install -r requirements.txt
 ```
 
-Change the username and password in `Secrets/ValidUsers.json` to something more secure. These will be required when first logging into the server. 
+Add a file called `Secrets/ValidUsers.json` and put the following in the file but replace `DesiredUsername` and `DesiredPassword` with desired values. Make sure the password is strong enough because it will prevent other random people from accessing the server
 
-Also make sure to change `Secrets/SessionsSecretKey.txt` to a more secure value. These key will be used to encrypt the user session which remembers a previously logged in user's credentials.
+```
+{"DesiredUsername": "DesiredPassword"}
+```
+
+Also add a file called `Secrets/SessionsSecretKey.txt` and put a strong password key inside that will be used to encrypt the user sessions which will allow users who previously logged in to be automatically allowed access without having to log in again
 
 To run the server just type
 
@@ -76,6 +80,6 @@ To run the server just type
 python main.py
 ```
 
-In order to access the server from outside the local network portforward the ip and port number of the server
+In order to access the server from outside the local network port forward the ip and port number of the server which is displayed after the server starts
 
 Also use something like [duckdns](https://www.duckdns.org/) to obtain a domain that can track the dynamic ip of a typical home network 
