@@ -5,10 +5,10 @@
 {% endblock head %}
 
 {% block y %}
-<div id="stream_div">
-	<img id="vidStream" src="/remote_video">
+<div class="container">
+	<img class="image" src="/remote_video">
 </div>
-<div id="button_div">
+<div class="container">
 	<form action="/remote_action" method="post" target="hiddenFrame">
 		<div class="button_row">
 			<button class="button" type="submit" name="button_power_toggle">Power On</button>

@@ -1,16 +1,5 @@
-#stream_div {
-  display:flex;
-  justify-content: center;
-}
-
-#button_div {
-  display:flex;
-  justify-content: center;
-}
-
-.button_row {
-  display:flex;
-  justify-content: center;
+.container{
+    text-align: center;
 }
 
 .button {
