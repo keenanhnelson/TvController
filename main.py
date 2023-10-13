@@ -111,7 +111,8 @@ def remote_screen():
 
 def gen(s):
     while True:
-        yield s.recv(2048)
+        data, address = s.recvfrom(100_000_000)
+        yield data
 
 
 @app.route("/remote_video")
@@ -119,13 +120,13 @@ def remote_video():
     if not check_if_user_has_already_logged_in():
         return redirect('/login')
 
-    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.connect(("localhost", app.gstreamer_port))
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    s.bind(("127.0.0.1", app.gstreamer_port))
     return Response(gen(s), mimetype=f'multipart/x-mixed-replace; boundary={app.mjpeg_boundary}')
 
 
 def find_open_port():
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sock.bind(('localhost', 0))
     port = sock.getsockname()[1]
     sock.close()
@@ -175,7 +176,7 @@ def setup_video_streaming():
         "!", "videoconvert",
         "!", "jpegenc",
         "!", "multipartmux", f"boundary={mjpeg_boundary}",
-        "!", "tcpserversink", "host=0.0.0.0", f"port={gstreamer_port}",
+        "!", "udpsink", "host=127.0.0.1", f"port={gstreamer_port}",
     ]
     p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     app.gstreamer_port = gstreamer_port
