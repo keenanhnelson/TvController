@@ -66,13 +66,25 @@ Install the required modules
 python -m pip install -r requirements.txt
 ```
 
-Add a file called `Secrets/ValidUsers.json` and put the following in the file but replace `DesiredUsername` and `DesiredPassword` with desired values. Make sure the password is strong enough because it will prevent other random people from accessing the server
+Add a file called Config.json to the root of the project. This file contains all the available user configuration options. An example is shown below. Make sure to change `valid_users` to a list of better usernames and passwords. Also make sure to change the `session_secret_key` to a better password value. Lastly, make sure the `tv_info` is changed to point to the correct ip address of the desired tv. 
 
 ```
-{"DesiredUsername": "DesiredPassword"}
-```
+{
+  "valid_users": {
+    "bad_username": "bad_password",
+    "bad_username2": "bad_password2"
+  },
 
-Also add a file called `Secrets/SessionsSecretKey.txt` and put a strong password key inside that will be used to encrypt the user sessions which will allow users who previously logged in to be automatically allowed access without having to log in again
+  "session_secret_key": "BAD_SECRET_KEY123",
+
+  "tv_info": {
+    "ip": "192.168.1.xxx",
+    "port": 8002
+  },
+
+  "webserver_port": 4003
+}
+```
 
 To run the server just type
 

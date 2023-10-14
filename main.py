@@ -10,24 +10,12 @@ import platform
 
 app = Flask(__name__)
 
-# Set session secret key
-with open("Secrets/SessionsSecretKey.txt") as f:
-    session_secret_key = f.read()
-app.secret_key = session_secret_key
-app.config["SESSION_PERMANENT"] = True
-app.config["SESSION_TYPE"] = "filesystem"
-Session(app)
-
-# Read valid users
-with open("Secrets/ValidUsers.json") as f:
-    valid_users = json.load(f)
-
 
 def check_if_user_has_already_logged_in():
     if not session.get("username"):
         return False
-    if session.get("username") in valid_users:
-        if session.get("password") == valid_users[session.get("username")]:
+    if session.get("username") in app.user_config["valid_users"]:
+        if session.get("password") == app.user_config["valid_users"][session.get("username")]:
             return True
 
 
@@ -45,8 +33,8 @@ def login():
     if request.method == "POST":
         input_username = request.form.get("username")
         input_password = request.form.get("password")
-        if input_username in valid_users:
-            if input_password == valid_users[input_username]:
+        if input_username in app.user_config["valid_users"]:
+            if input_password == app.user_config["valid_users"][input_username]:
                 session["username"] = input_username
                 session["password"] = input_password
                 return redirect("/")
@@ -59,13 +47,9 @@ def remote_action():
     if not check_if_user_has_already_logged_in():
         return redirect('/login')
 
-    # for key, value in request.form.items():
-    #     if key in app.tv_action:
-    #         app.tv_action[key]()
-
-    tv_ip_address = "192.168.254.125"
-    tv_port = 8002
-    token_file = os.path.dirname(os.path.realpath(__file__)) + '/Secrets/TvToken.txt'
+    tv_ip_address = app.user_config["tv"]["ip"]
+    tv_port = app.user_config["tv"]["port"]
+    token_file = 'TvToken.txt'
 
     if "button_power_toggle" in request.form:
         print("Pressed button_power_toggle")
@@ -133,28 +117,6 @@ def find_open_port():
     return port
 
 
-def setup_tv_actions(ip, port):
-    print("Connecting to samsung tv")
-    tv_token_file = os.path.dirname(os.path.realpath(__file__)) + '/Secrets/TvToken.txt'
-    # tv_remote = SamsungTVWS(host=ip, port=port, token_file=tv_token_file)
-    print("Finished connecting to samsung tv")
-
-    tv_action = {
-        "button_power_toggle": SamsungTVWS(host=ip, port=port, token_file=tv_token_file).shortcuts().power,
-        "button_up": SamsungTVWS(host=ip, port=port, token_file=tv_token_file).shortcuts().up,
-        "button_left": SamsungTVWS(host=ip, port=port, token_file=tv_token_file).shortcuts().left,
-        "button_enter": SamsungTVWS(host=ip, port=port, token_file=tv_token_file).shortcuts().enter,
-        "button_right": SamsungTVWS(host=ip, port=port, token_file=tv_token_file).shortcuts().right,
-        "button_down": SamsungTVWS(host=ip, port=port, token_file=tv_token_file).shortcuts().down,
-        "button_back": SamsungTVWS(host=ip, port=port, token_file=tv_token_file).shortcuts().back,
-        "button_menu": SamsungTVWS(host=ip, port=port, token_file=tv_token_file).shortcuts().menu,
-        "button_volume_up": SamsungTVWS(host=ip, port=port, token_file=tv_token_file).shortcuts().volume_up,
-        "button_volume_down": SamsungTVWS(host=ip, port=port, token_file=tv_token_file).shortcuts().volume_down,
-    }
-    app.tv_action = tv_action
-    print("done")
-
-
 def setup_video_streaming():
     print("Opening gstreamer pipeline")
     if platform.system() == "Windows":
@@ -185,12 +147,19 @@ def setup_video_streaming():
 
 
 if __name__ == "__main__":
-    # tv_ip_address = "192.168.254.125"
-    # tv_port = 8002
-    # setup_tv_actions(tv_ip_address, tv_port)
+    # Load user specified configuration file
+    with open("Config.json") as f:
+        config = json.load(f)
+
+    # Setup session
+    app.secret_key = config["session_secret_key"]
+    app.config["SESSION_PERMANENT"] = True
+    app.config["SESSION_TYPE"] = "filesystem"
+    Session(app)
+
+    app.user_config = config
 
     setup_video_streaming()
 
-    webhost_port = 4003
-    app.run(host="0.0.0.0", port=webhost_port)
+    app.run(host="0.0.0.0", port=config["webserver_port"])
 

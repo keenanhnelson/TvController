@@ -1,4 +1,5 @@
 .idea/ 
 venv/
 flask_session/
-Secrets/
+TvToken.txt
+Config.json
