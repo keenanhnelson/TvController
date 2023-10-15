@@ -47,8 +47,8 @@ def remote_action():
     if not check_if_user_has_already_logged_in():
         return redirect('/login')
 
-    tv_ip_address = app.user_config["tv"]["ip"]
-    tv_port = app.user_config["tv"]["port"]
+    tv_ip_address = app.user_config["tv_info"]["ip"]
+    tv_port = app.user_config["tv_info"]["port"]
     token_file = 'TvToken.txt'
 
     if "button_power_toggle" in request.form:
@@ -128,14 +128,25 @@ def setup_video_streaming():
     else:
         raise Exception(f"Does not currently suppport {platform.system()}")
 
-    gstreamer_port = find_open_port()  # 5007
+    gstreamer_port = find_open_port()
     mjpeg_boundary = "video_boundary"
     print(f"{gstreamer_port=}")
+
+    gstreamer_crop = []
+    if "video_options" in app.user_config:
+        if "crop" in app.user_config["video_options"]:
+            left = app.user_config["video_options"]["crop"]["left"]
+            right = app.user_config["video_options"]["crop"]["right"]
+            top = app.user_config["video_options"]["crop"]["top"]
+            bottom = app.user_config["video_options"]["crop"]["bottom"]
+            gstreamer_crop = ["!", "videocrop", f"left={left}", f"right={right}", f"top={top}", f"bottom={bottom}"]
+
     cmd = [
         gstreamer_cmd,
         "-v",
         *webcam_option,
         "!", "videoconvert",
+        *gstreamer_crop,
         "!", "jpegenc",
         "!", "multipartmux", f"boundary={mjpeg_boundary}",
         "!", "udpsink", "host=127.0.0.1", f"port={gstreamer_port}",
