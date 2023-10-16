@@ -3,3 +3,4 @@ venv/
 flask_session/
 TvToken.txt
 Config.json
+SetWebcamSettings.sh

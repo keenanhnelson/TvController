@@ -101,6 +101,14 @@ To run the server just type
 python main.py
 ```
 
+Use the `v4l2-ctl` command to change camera options on Linux. The below commands will list the current camera settings along with changing the camera to manual exposure and the exposure to a low value.
+
+```
+v4l2-ctl -l  # List available camera settings and current values
+v4l2-ctl --set-ctrl auto_exposure=1  # Set exposure to manual
+v4l2-ctl --set-ctrl exposure_time_absolute=13  # Set the exposure to a certain value. Lower will lead to a darker image
+```
+
 In order to access the server from outside the local network port forward the ip and port number of the server which is displayed after the server starts
 
 Also use something like [duckdns](https://www.duckdns.org/) to obtain a domain that can track the dynamic ip of a typical home network 
