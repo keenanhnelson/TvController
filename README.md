@@ -39,7 +39,7 @@ Next clone the project
 
 ```
 git clone https://github.com/keenanhnelson/TvController.git
-cd TvController
+cd TvController/Code
 ```
 
 Install the required python version using pyenv
