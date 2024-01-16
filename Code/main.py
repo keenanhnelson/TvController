@@ -119,14 +119,17 @@ def find_open_port():
 
 def setup_video_streaming():
     print("Opening gstreamer pipeline")
-    if platform.system() == "Windows":
+    if app.user_config["platform"] == "windows":
         gstreamer_cmd = "gst-launch-1.0.exe"
         webcam_option = ["ksvideosrc", "device-index=0"]
-    elif platform.system() == "Linux":
+    elif app.user_config["platform"] == "Linux":
         gstreamer_cmd = "gst-launch-1.0"
         webcam_option = ["v4l2src", "device=/dev/video0"]
+    elif app.user_config["platform"] == "raspberrypi":
+        gstreamer_cmd = "gst-launch-1.0"
+        webcam_option = ["libcamerasrc"]
     else:
-        raise Exception(f"Does not currently suppport {platform.system()}")
+        raise Exception(f"{app.user_config['platform']} is not currently supported")
 
     gstreamer_port = find_open_port()
     mjpeg_boundary = "video_boundary"
@@ -147,7 +150,7 @@ def setup_video_streaming():
         *webcam_option,
         "!", "videoconvert",
         *gstreamer_crop,
-        "!", "jpegenc",
+        "!", "jpegenc", "quality=50",
         "!", "multipartmux", f"boundary={mjpeg_boundary}",
         "!", "udpsink", "host=127.0.0.1", f"port={gstreamer_port}",
     ]

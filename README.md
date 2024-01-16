@@ -66,7 +66,7 @@ Install the required modules
 python -m pip install -r requirements.txt
 ```
 
-Add a file called Config.json to the root of the project. This file contains all the available user configuration options. An example is shown below. Make sure to change `valid_users` to a list of better usernames and passwords. Also make sure to change the `session_secret_key` to a better password value. Lastly, make sure the `tv_info` is changed to point to the correct ip address of the desired tv. There is also a crop option that can be calibrated to only show the TV. To not crop the webcam image, remove the `crop` section entirely.
+Add a file called Config.json to the root of the project. This file contains all the available user configuration options. An example is shown below. Make sure to change `valid_users` to a list of better usernames and passwords. Then make sure to select a supported `platform` which should be either `windows`, `linux`, or `raspberrypi`. If `windows` or `linux` platform is selected then a usb webcam is expected. If `raspberrypi` is selected then an attached ribbon cable camera is expected. Next make sure to change the `session_secret_key` to a better password value. Lastly, make sure the `tv_info` is changed to point to the correct ip address of the desired samsung tv. There is also a crop option that can be calibrated to only show the TV. To not crop the webcam image, remove the `crop` section entirely.
 
 ```
 {
@@ -74,6 +74,8 @@ Add a file called Config.json to the root of the project. This file contains all
     "bad_username": "bad_password",
     "bad_username2": "bad_password2"
   },
+
+  "platform": "raspberrypi",
 
   "session_secret_key": "BAD_SECRET_KEY123",
 
