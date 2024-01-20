@@ -1,8 +1,8 @@
 # TV Controller
 
-This project is for remotely monitoring and controlling a TV
+This project is for remotely monitoring and controlling a TV. It uses a Raspberry Pi, Raspberry Pi camera, and infrared LED emitter and receiver. This project exists to be able to remotely fix the TV for my Grandpa who doesn't know how to work a smart TV 
 
-## Setup on Linux
+## Setup on Raspberry Pi
 
 Make sure the system is up-to-date
 
@@ -66,7 +66,13 @@ Install the required modules
 python -m pip install -r requirements.txt
 ```
 
-Add a file called Config.json to the root of the project. This file contains all the available user configuration options. An example is shown below. Make sure to change `valid_users` to a list of better usernames and passwords. Then make sure to select a supported `platform` which should be either `windows`, `linux`, or `raspberrypi`. If `windows` or `linux` platform is selected then a usb webcam is expected. If `raspberrypi` is selected then an attached ribbon cable camera is expected. Next make sure to change the `session_secret_key` to a better password value. Lastly, make sure the `tv_info` is changed to point to the correct ip address of the desired samsung tv. There is also a crop option that can be calibrated to only show the TV. To not crop the webcam image, remove the `crop` section entirely.
+Run the following command and use an existing IR remote to configure the buttons correctly
+
+```
+./ConfigInfraredCodes.sh
+```
+
+Add a file called Config.json to the root of the project. This file contains all the available user configuration options. An example is shown below. Make sure to change `valid_users` to a list of better usernames and passwords. Next make sure to change the `session_secret_key` to a better password value. There is also a crop option that can be calibrated to only show the TV. To not crop the webcam image, remove the `crop` section entirely.
 
 ```
 {
@@ -74,8 +80,6 @@ Add a file called Config.json to the root of the project. This file contains all
     "bad_username": "bad_password",
     "bad_username2": "bad_password2"
   },
-
-  "platform": "raspberrypi",
 
   "session_secret_key": "BAD_SECRET_KEY123",
 
@@ -103,14 +107,16 @@ To run the server just type
 python main.py
 ```
 
-Use the `v4l2-ctl` command to change camera options on Linux. The below commands will list the current camera settings along with changing the camera to manual exposure and the exposure to a low value.
-
-```
-v4l2-ctl -l  # List available camera settings and current values
-v4l2-ctl --set-ctrl auto_exposure=1  # Set exposure to manual
-v4l2-ctl --set-ctrl exposure_time_absolute=13  # Set the exposure to a certain value. Lower will lead to a darker image
-```
-
 In order to access the server from outside the local network port forward the ip and port number of the server which is displayed after the server starts
 
 Also use something like [duckdns](https://www.duckdns.org/) to obtain a domain that can track the dynamic ip of a typical home network 
+
+## Setup auto start
+
+Add the following lines of code to the end of `/etc/rc.local` but just before `exit 0` to allow the program to start on boot. Substitute `${ProjectLoc}` with the location where the code was cloned.
+
+```
+cd ${ProjectLoc}/TvController/Code
+. venv/bin/activate
+python main.py &
+```

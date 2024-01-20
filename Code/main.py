@@ -1,12 +1,10 @@
 import socket
 from flask import Flask, render_template, Response, redirect, request, session
-import subprocess
-from samsungtvws import SamsungTVWS
-from roku import Roku
 from flask_session import Session
+import subprocess
 import json
-import os
-import platform
+import piir
+
 
 app = Flask(__name__)
 
@@ -47,40 +45,38 @@ def remote_action():
     if not check_if_user_has_already_logged_in():
         return redirect('/login')
 
-    tv_ip_address = app.user_config["tv_info"]["ip"]
-    tv_port = app.user_config["tv_info"]["port"]
-    token_file = 'TvToken.txt'
+
 
     if "button_power_toggle" in request.form:
         print("Pressed button_power_toggle")
-        SamsungTVWS(host=tv_ip_address, port=tv_port, token_file=token_file).shortcuts().power()
+        app.remote.send("power")
     elif "button_up" in request.form:
         print("Pressed button_up")
-        SamsungTVWS(host=tv_ip_address, port=tv_port, token_file=token_file).shortcuts().up()
+        app.remote.send("up")
     elif "button_left" in request.form:
         print("Pressed button_left")
-        SamsungTVWS(host=tv_ip_address, port=tv_port, token_file=token_file).shortcuts().left()
+        app.remote.send("left")
     elif "button_enter" in request.form:
         print("Pressed button_enter")
-        SamsungTVWS(host=tv_ip_address, port=tv_port, token_file=token_file).shortcuts().enter()
+        app.remote.send("enter")
     elif "button_right" in request.form:
         print("Pressed button_right")
-        SamsungTVWS(host=tv_ip_address, port=tv_port, token_file=token_file).shortcuts().right()
+        app.remote.send("right")
     elif "button_down" in request.form:
         print("Pressed button_down")
-        SamsungTVWS(host=tv_ip_address, port=tv_port, token_file=token_file).shortcuts().down()
+        app.remote.send("down")
     elif "button_back" in request.form:
         print("Pressed button_back")
-        SamsungTVWS(host=tv_ip_address, port=tv_port, token_file=token_file).shortcuts().back()
+        app.remote.send("back")
     elif "button_menu" in request.form:
         print("Pressed button_menu")
-        SamsungTVWS(host=tv_ip_address, port=tv_port, token_file=token_file).shortcuts().menu()
+        app.remote.send("menu")
     elif "button_volume_up" in request.form:
         print("Pressed button_volume_up")
-        SamsungTVWS(host=tv_ip_address, port=tv_port, token_file=token_file).shortcuts().volume_up()
+        app.remote.send("volume_up")
     elif "button_volume_down" in request.form:
         print("Pressed button_volume_down")
-        SamsungTVWS(host=tv_ip_address, port=tv_port, token_file=token_file).shortcuts().volume_down()
+        app.remote.send("volume_down")
     print("Finished button press")
     return "", 204
 
@@ -119,17 +115,9 @@ def find_open_port():
 
 def setup_video_streaming():
     print("Opening gstreamer pipeline")
-    if app.user_config["platform"] == "windows":
-        gstreamer_cmd = "gst-launch-1.0.exe"
-        webcam_option = ["ksvideosrc", "device-index=0"]
-    elif app.user_config["platform"] == "Linux":
-        gstreamer_cmd = "gst-launch-1.0"
-        webcam_option = ["v4l2src", "device=/dev/video0"]
-    elif app.user_config["platform"] == "raspberrypi":
-        gstreamer_cmd = "gst-launch-1.0"
-        webcam_option = ["libcamerasrc"]
-    else:
-        raise Exception(f"{app.user_config['platform']} is not currently supported")
+
+    gstreamer_cmd = "gst-launch-1.0"
+    webcam_option = ["libcamerasrc"]
 
     gstreamer_port = find_open_port()
     mjpeg_boundary = "video_boundary"
@@ -161,6 +149,7 @@ def setup_video_streaming():
 
 
 if __name__ == "__main__":
+
     # Load user specified configuration file
     with open("Config.json") as f:
         config = json.load(f)
@@ -172,6 +161,7 @@ if __name__ == "__main__":
     Session(app)
 
     app.user_config = config
+    app.remote = piir.Remote("InfraredCodes.json", 17)
 
     setup_video_streaming()
 
