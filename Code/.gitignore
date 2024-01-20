@@ -1,4 +1,4 @@
-.idea/ 
+.idea/
 venv/
 flask_session/
 Config.json

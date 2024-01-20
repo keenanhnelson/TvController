@@ -45,39 +45,10 @@ def remote_action():
     if not check_if_user_has_already_logged_in():
         return redirect('/login')
 
-
-
-    if "button_power_toggle" in request.form:
-        print("Pressed button_power_toggle")
-        app.remote.send("power")
-    elif "button_up" in request.form:
-        print("Pressed button_up")
-        app.remote.send("up")
-    elif "button_left" in request.form:
-        print("Pressed button_left")
-        app.remote.send("left")
-    elif "button_enter" in request.form:
-        print("Pressed button_enter")
-        app.remote.send("enter")
-    elif "button_right" in request.form:
-        print("Pressed button_right")
-        app.remote.send("right")
-    elif "button_down" in request.form:
-        print("Pressed button_down")
-        app.remote.send("down")
-    elif "button_back" in request.form:
-        print("Pressed button_back")
-        app.remote.send("back")
-    elif "button_menu" in request.form:
-        print("Pressed button_menu")
-        app.remote.send("menu")
-    elif "button_volume_up" in request.form:
-        print("Pressed button_volume_up")
-        app.remote.send("volume_up")
-    elif "button_volume_down" in request.form:
-        print("Pressed button_volume_down")
-        app.remote.send("volume_down")
-    print("Finished button press")
+    for key, value in request.form.items():
+        action = key.replace("button_", "")  # Remove button_ from key to get action only
+        print(f"Pressing: {action}")
+        app.remote.send(action)
     return "", 204
 
 
