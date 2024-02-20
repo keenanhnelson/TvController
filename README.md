@@ -101,6 +101,13 @@ Add a file called Config.json to the root of the project. This file contains all
 }
 ```
 
+Make sure that pigpio daemon is running before starting the server so that the server can control the IR LED. This setting will persist even through a power cycle
+
+```
+sudo systemctl enable pigpiod
+sudo systemctl start pigpiod
+```
+
 To run the server just type
 
 ```
@@ -119,4 +126,16 @@ Add the following lines of code to the end of `/etc/rc.local` but just before `e
 cd ${ProjectLoc}/TvController/Code
 . venv/bin/activate
 python main.py &
+```
+
+If the previous lines were ran and it is desired to stop the program after a reboot then run the following to kill it
+
+```
+sudo killall python gst-launch-1.0
+```
+
+Use the following command to see if the server is running
+
+```
+ps aux | grep python
 ```
